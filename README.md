@@ -10,10 +10,4 @@ et le verdict sont **calculés par des règles** dans `api/_core.py`. Un seul ap
 - `api/analyze.py` + `public/index.html` : version web (Vercel)
 - `tests/` : `python -m unittest discover tests`
 
-## Déploiement Vercel (plan Hobby gratuit)
-1. Importer le dépôt dans Vercel (framework « Other », aucun build).
-2. Variables d'environnement : `OPENAI_API_KEY` (obligatoire), `ACCESS_CODE` (**fortement recommandé**, sinon toute personne
-   ayant l'URL consomme votre clé), `OPENAI_MODEL` (défaut `gpt-4.1-mini`).
-3. La fonction dure 10 à 40 s (limite configurée : 60 s). Dépôts GitHub publics uniquement, ≤ 30 Mo.
-
 Limites : analyse d'un extrait du projet (fichiers priorisés : docs, manifestes, code lié aux données), pas un avis juridique.
