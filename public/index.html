@@ -1,150 +1,565 @@
 <!doctype html>
 <html lang="fr">
+
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Conformité AI Act & RGPD</title>
-<style>
-  :root {
-    --canvas:#fff; --subtle:#f6f8fa; --inset:#eaeef2; --border:#d0d7de; --muted-b:#d8dee4; --fg:#1f2328; --mut:#656d76;
-    --accent:#0969da; --accent-bg:#ddf4ff; --accent-b:#54aeff66;
-    --ok:#1a7f37; --ok-bg:#dafbe1; --ok-b:#4ac26b66; --btn:#1f883d; --btn-h:#1a7f37;
-    --danger:#d1242f; --danger-bg:#ffebe9; --danger-b:#ff818266;
-    --severe:#bc4c00; --severe-bg:#fff1e5; --severe-b:#fb8f4466;
-    --attn:#9a6700; --attn-bg:#fff8c5; --attn-b:#d4a72c66;
-    --header:#f6f8fa; --header-fg:#1f2328; --shadow:0 1px 0 rgba(31,35,40,.04);
-  }
-  @media (prefers-color-scheme: dark) { :root {
-    --canvas:#0d1117; --subtle:#161b22; --inset:#010409; --border:#30363d; --muted-b:#21262d; --fg:#e6edf3; --mut:#7d8590;
-    --accent:#4493f8; --accent-bg:#388bfd1a; --accent-b:#388bfd66;
-    --ok:#3fb950; --ok-bg:#2ea04326; --ok-b:#2ea04366; --btn:#238636; --btn-h:#2ea043;
-    --danger:#f85149; --danger-bg:#f851491a; --danger-b:#f8514966;
-    --severe:#db6d28; --severe-bg:#db6d281a; --severe-b:#db6d2866;
-    --attn:#d29922; --attn-bg:#bb800926; --attn-b:#bb800966;
-    --header:#161b22; --header-fg:#e6edf3; --shadow:none;
-  } }
-  * { box-sizing:border-box }
-  body { margin:0; background:var(--canvas); color:var(--fg); font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif }
-  a { color:var(--accent); text-decoration:none } a:hover { text-decoration:underline }
-  header.top { background:var(--header); color:var(--header-fg); padding:16px 0; border-bottom:1px solid var(--border) }
-  header.top div { max-width:1012px; margin:0 auto; padding:0 16px; font-weight:600; font-size:16px }
-  main { max-width:1012px; margin:0 auto; padding:24px 16px 64px }
-  h1 { font-size:24px; font-weight:400; margin:0 0 4px } h1 b { font-weight:600 }
-  h2 { font-size:16px; font-weight:600; margin:0 } h3 { font-size:14px; font-weight:600; margin:16px 0 6px }
-  .sub { color:var(--mut); margin:0 0 16px }
-  .Box { background:var(--canvas); border:1px solid var(--border); border-radius:6px; margin-bottom:16px; box-shadow:var(--shadow) }
-  .Box-header { background:var(--subtle); border-bottom:1px solid var(--border); padding:8px 16px; border-radius:6px 6px 0 0; display:flex; gap:8px; align-items:center; flex-wrap:wrap }
-  .Box-body { padding:16px } .Box-row { padding:8px 16px; border-top:1px solid var(--muted-b) } .Box-row:first-child { border-top:0 }
-  label { display:block; font-weight:600; margin:0 0 6px }
-  .form-control { width:100%; padding:5px 12px; min-height:32px; font:inherit; color:var(--fg); background:var(--canvas); border:1px solid var(--border); border-radius:6px; box-shadow:inset 0 1px 0 rgba(208,215,222,.2) }
-  .form-control:focus { outline:2px solid var(--accent); outline-offset:-1px; border-color:var(--accent) }
-  textarea.form-control { min-height:112px; resize:vertical; padding:8px 12px } .hint { color:var(--mut); font-size:12px; margin:4px 0 16px }
-  .btn { padding:5px 16px; min-height:32px; font:inherit; font-weight:500; border-radius:6px; border:1px solid rgba(31,35,40,.15); cursor:pointer; color:#fff; background:var(--btn) }
-  .btn:hover { background:var(--btn-h) } .btn:disabled { opacity:.6; cursor:not-allowed }
-  .flash { padding:12px 16px; border:1px solid; border-radius:6px; margin-bottom:16px }
-  .flash-ok { background:var(--ok-bg); border-color:var(--ok-b) } .flash-warn { background:var(--attn-bg); border-color:var(--attn-b) }
-  .flash-severe { background:var(--severe-bg); border-color:var(--severe-b) } .flash-danger { background:var(--danger-bg); border-color:var(--danger-b) }
-  .flash-default { background:var(--subtle); border-color:var(--border) } .flash strong { font-size:16px }
-  .Label { display:inline-block; padding:0 7px; font-size:12px; font-weight:500; line-height:18px; border:1px solid; border-radius:2em; white-space:nowrap }
-  .Label-critique { color:var(--danger); border-color:var(--danger) } .Label-majeur { color:var(--severe); border-color:var(--severe) }
-  .Label-mineur { color:var(--attn); border-color:var(--attn) } .Label-default { color:var(--mut); border-color:var(--border) } .Label-accent { color:var(--accent); border-color:var(--accent) }
-  .Counter { display:inline-block; min-width:20px; padding:0 6px; font-size:12px; font-weight:500; line-height:18px; text-align:center; background:var(--inset); border-radius:2em; margin-left:6px }
-  .tabs { display:flex; gap:8px; border-bottom:1px solid var(--border); margin-bottom:16px; overflow-x:auto }
-  .tab { padding:8px 12px; background:none; border:0; border-bottom:2px solid transparent; color:var(--fg); font:inherit; cursor:pointer; white-space:nowrap; border-radius:6px 6px 0 0 }
-  .tab:hover { background:var(--subtle) } .tab[aria-selected=true] { font-weight:600; border-bottom-color:#fd8c73 }
-  .mut { color:var(--mut) } small { font-size:12px } code, .mono { font:12px ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace }
-  code { background:var(--inset); padding:.2em .4em; border-radius:6px }
-  ul { padding-left:20px; margin:6px 0 } li { margin:4px 0 }
-  table { width:100%; border-collapse:collapse } th { text-align:left; font-weight:600; background:var(--subtle) }
-  th, td { padding:6px 12px; border-top:1px solid var(--muted-b); vertical-align:top } tr:first-child th, tr:first-child td { border-top:0 }
-  .bar { display:inline-block; width:80px; height:8px; background:var(--inset); border-radius:4px; overflow:hidden; vertical-align:middle } .bar i { display:block; height:100%; background:var(--ok) }
-  details summary { cursor:pointer; color:var(--accent) } .err { color:var(--danger) } [hidden] { display:none !important }
-  @media (max-width:600px) { h1 { font-size:20px } .Box-header { padding:8px 12px } }
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Conformité AI Act & RGPD</title>
+  <style>
+    :root {
+      --canvas: #fff;
+      --subtle: #f6f8fa;
+      --inset: #eaeef2;
+      --border: #d0d7de;
+      --muted-b: #d8dee4;
+      --fg: #1f2328;
+      --mut: #656d76;
+      --accent: #0969da;
+      --accent-bg: #ddf4ff;
+      --accent-b: #54aeff66;
+      --ok: #1a7f37;
+      --ok-bg: #dafbe1;
+      --ok-b: #4ac26b66;
+      --btn: #1f883d;
+      --btn-h: #1a7f37;
+      --danger: #d1242f;
+      --danger-bg: #ffebe9;
+      --danger-b: #ff818266;
+      --severe: #bc4c00;
+      --severe-bg: #fff1e5;
+      --severe-b: #fb8f4466;
+      --attn: #9a6700;
+      --attn-bg: #fff8c5;
+      --attn-b: #d4a72c66;
+      --header: #f6f8fa;
+      --header-fg: #1f2328;
+      --shadow: 0 1px 0 rgba(31, 35, 40, .04);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --canvas: #0d1117;
+        --subtle: #161b22;
+        --inset: #010409;
+        --border: #30363d;
+        --muted-b: #21262d;
+        --fg: #e6edf3;
+        --mut: #7d8590;
+        --accent: #4493f8;
+        --accent-bg: #388bfd1a;
+        --accent-b: #388bfd66;
+        --ok: #3fb950;
+        --ok-bg: #2ea04326;
+        --ok-b: #2ea04366;
+        --btn: #238636;
+        --btn-h: #2ea043;
+        --danger: #f85149;
+        --danger-bg: #f851491a;
+        --danger-b: #f8514966;
+        --severe: #db6d28;
+        --severe-bg: #db6d281a;
+        --severe-b: #db6d2866;
+        --attn: #d29922;
+        --attn-bg: #bb800926;
+        --attn-b: #bb800966;
+        --header: #161b22;
+        --header-fg: #e6edf3;
+        --shadow: none;
+      }
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    body {
+      margin: 0;
+      background: var(--canvas);
+      color: var(--fg);
+      font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none
+    }
+
+    a:hover {
+      text-decoration: underline
+    }
+
+    header.top {
+      background: var(--header);
+      color: var(--header-fg);
+      padding: 16px 0;
+      border-bottom: 1px solid var(--border)
+    }
+
+    header.top div {
+      max-width: 1012px;
+      margin: 0 auto;
+      padding: 0 16px;
+      font-weight: 600;
+      font-size: 16px
+    }
+
+    main {
+      max-width: 1012px;
+      margin: 0 auto;
+      padding: 24px 16px 64px
+    }
+
+    h1 {
+      font-size: 24px;
+      font-weight: 400;
+      margin: 0 0 4px
+    }
+
+    h1 b {
+      font-weight: 600
+    }
+
+    h2 {
+      font-size: 16px;
+      font-weight: 600;
+      margin: 0
+    }
+
+    h3 {
+      font-size: 14px;
+      font-weight: 600;
+      margin: 16px 0 6px
+    }
+
+    .sub {
+      color: var(--mut);
+      margin: 0 0 16px
+    }
+
+    .Box {
+      background: var(--canvas);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow)
+    }
+
+    .Box-header {
+      background: var(--subtle);
+      border-bottom: 1px solid var(--border);
+      padding: 8px 16px;
+      border-radius: 6px 6px 0 0;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap
+    }
+
+    .Box-body {
+      padding: 16px
+    }
+
+    .Box-row {
+      padding: 8px 16px;
+      border-top: 1px solid var(--muted-b)
+    }
+
+    .Box-row:first-child {
+      border-top: 0
+    }
+
+    label {
+      display: block;
+      font-weight: 600;
+      margin: 0 0 6px
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 5px 12px;
+      min-height: 32px;
+      font: inherit;
+      color: var(--fg);
+      background: var(--canvas);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      box-shadow: inset 0 1px 0 rgba(208, 215, 222, .2)
+    }
+
+    .form-control:focus {
+      outline: 2px solid var(--accent);
+      outline-offset: -1px;
+      border-color: var(--accent)
+    }
+
+    textarea.form-control {
+      min-height: 112px;
+      resize: vertical;
+      padding: 8px 12px
+    }
+
+    .hint {
+      color: var(--mut);
+      font-size: 12px;
+      margin: 4px 0 16px
+    }
+
+    .btn {
+      padding: 5px 16px;
+      min-height: 32px;
+      font: inherit;
+      font-weight: 500;
+      border-radius: 6px;
+      border: 1px solid rgba(31, 35, 40, .15);
+      cursor: pointer;
+      color: #fff;
+      background: var(--btn)
+    }
+
+    .btn:hover {
+      background: var(--btn-h)
+    }
+
+    .btn:disabled {
+      opacity: .6;
+      cursor: not-allowed
+    }
+
+    .flash {
+      padding: 12px 16px;
+      border: 1px solid;
+      border-radius: 6px;
+      margin-bottom: 16px
+    }
+
+    .flash-ok {
+      background: var(--ok-bg);
+      border-color: var(--ok-b)
+    }
+
+    .flash-warn {
+      background: var(--attn-bg);
+      border-color: var(--attn-b)
+    }
+
+    .flash-severe {
+      background: var(--severe-bg);
+      border-color: var(--severe-b)
+    }
+
+    .flash-danger {
+      background: var(--danger-bg);
+      border-color: var(--danger-b)
+    }
+
+    .flash-default {
+      background: var(--subtle);
+      border-color: var(--border)
+    }
+
+    .flash strong {
+      font-size: 16px
+    }
+
+    .Label {
+      display: inline-block;
+      padding: 0 7px;
+      font-size: 12px;
+      font-weight: 500;
+      line-height: 18px;
+      border: 1px solid;
+      border-radius: 2em;
+      white-space: nowrap
+    }
+
+    .Label-critique {
+      color: var(--danger);
+      border-color: var(--danger)
+    }
+
+    .Label-majeur {
+      color: var(--severe);
+      border-color: var(--severe)
+    }
+
+    .Label-mineur {
+      color: var(--attn);
+      border-color: var(--attn)
+    }
+
+    .Label-default {
+      color: var(--mut);
+      border-color: var(--border)
+    }
+
+    .Label-accent {
+      color: var(--accent);
+      border-color: var(--accent)
+    }
+
+    .Counter {
+      display: inline-block;
+      min-width: 20px;
+      padding: 0 6px;
+      font-size: 12px;
+      font-weight: 500;
+      line-height: 18px;
+      text-align: center;
+      background: var(--inset);
+      border-radius: 2em;
+      margin-left: 6px
+    }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 16px;
+      overflow-x: auto
+    }
+
+    .tab {
+      padding: 8px 12px;
+      background: none;
+      border: 0;
+      border-bottom: 2px solid transparent;
+      color: var(--fg);
+      font: inherit;
+      cursor: pointer;
+      white-space: nowrap;
+      border-radius: 6px 6px 0 0
+    }
+
+    .tab:hover {
+      background: var(--subtle)
+    }
+
+    .tab[aria-selected=true] {
+      font-weight: 600;
+      border-bottom-color: #fd8c73
+    }
+
+    .mut {
+      color: var(--mut)
+    }
+
+    small {
+      font-size: 12px
+    }
+
+    code,
+    .mono {
+      font: 12px ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace
+    }
+
+    code {
+      background: var(--inset);
+      padding: .2em .4em;
+      border-radius: 6px
+    }
+
+    ul {
+      padding-left: 20px;
+      margin: 6px 0
+    }
+
+    li {
+      margin: 4px 0
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse
+    }
+
+    th {
+      text-align: left;
+      font-weight: 600;
+      background: var(--subtle)
+    }
+
+    th,
+    td {
+      padding: 6px 12px;
+      border-top: 1px solid var(--muted-b);
+      vertical-align: top
+    }
+
+    tr:first-child th,
+    tr:first-child td {
+      border-top: 0
+    }
+
+    .bar {
+      display: inline-block;
+      width: 80px;
+      height: 8px;
+      background: var(--inset);
+      border-radius: 4px;
+      overflow: hidden;
+      vertical-align: middle
+    }
+
+    .bar i {
+      display: block;
+      height: 100%;
+      background: var(--ok)
+    }
+
+    details summary {
+      cursor: pointer;
+      color: var(--accent)
+    }
+
+    .err {
+      color: var(--danger)
+    }
+
+    [hidden] {
+      display: none !important
+    }
+
+    @media (max-width:600px) {
+      h1 {
+        font-size: 20px
+      }
+
+      .Box-header {
+        padding: 8px 12px
+      }
+    }
+  </style>
 </head>
+
 <body>
-<header class="top"><div>Conformité AI Act & RGPD</div></header>
-<main>
-  <h1>Analyser <b>un projet</b></h1>
-  <p class="sub">Dépôt public ou description. Un seul appel IA (≤ 50 000 tokens) ; les conclusions sont calculées par des règles, pas par le modèle.</p>
+  <header class="top">
+    <div>Conformité AI Act & RGPD</div>
+  </header>
+  <main>
+    <h1>Vérifier <b>votre projet</b></h1>
+    <p class="sub">Renseignez le dépôt GitHub de votre projet ou décrivez-le, et obtenez un rapport de conformité AI
+      Act & RGPD : statut de risque, obligations à respecter, points à corriger et questions à clarifier.</p>
 
-  <form class="Box" id="f">
-    <div class="Box-header"><h2>Source du projet</h2></div>
-    <div class="Box-body">
-      <label for="repo">URL du dépôt</label>
-      <input id="repo" class="form-control" placeholder="https://github.com/proprietaire/depot" autocomplete="off">
-      <p class="hint">Dépôts publics uniquement, 30 Mo maximum.</p>
-      <label for="doc">Ou description / documentation</label>
-      <textarea id="doc" class="form-control" placeholder="Finalité, données traitées, modèles ou API utilisés, hébergement, utilisateurs, décisions automatisées…"></textarea>
-      <p class="hint">Ignoré si une URL est renseignée.</p>
-      <div id="codebox" hidden><label for="code">Code d'accès</label><input id="code" type="password" class="form-control" autocomplete="off" style="max-width:280px"><p class="hint"></p></div>
-      <button id="go" class="btn">Analyser</button> <span id="status" class="mut" style="margin-left:8px"></span>
+    <div class="flash flash-warn" style="margin-bottom:16px">
+      Les informations soumises (dépôt ou texte) sont transmises à l'API d'OpenAI (États-Unis) pour être analysées ;
+      elles ne sont pas conservées par ce site au-delà de la requête. Ne soumettez pas de données personnelles réelles
+      (noms, e-mails, données de clients ou de salariés) : utilisez des exemples fictifs ou anonymisés.
+      Voir les <a href="#mentions">mentions légales</a>.
     </div>
-  </form>
-  <div id="out"></div>
-</main>
-<script>
-const $ = id => document.getElementById(id);
-const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
-const FLASH = { interdit:"flash-danger", non_conforme_probable:"flash-danger", a_corriger:"flash-severe", plutot_conforme:"flash-ok", indetermine:"flash-warn" };
-const STATUS = { prohibited:"flash-danger", high_risk:"flash-severe", high_risk_sectoral:"flash-severe", not_high_risk_registered:"flash-warn",
-                 minimal:"flash-ok", out_of_scope:"flash-default", excluded:"flash-default", undetermined:"flash-warn" };
-const rows = a => a.length ? a.map(x => `<div class="Box-row">${x}</div>`).join("") : `<div class="Box-row mut">Aucun.</div>`;
-const box = (title, body, count) => `<div class="Box"><div class="Box-header"><h2>${title}</h2>${count != null ? `<span class="Counter">${count}</span>` : ""}</div>${body}</div>`;
 
-fetch("/api/analyze").then(r => r.json()).then(j => { $("codebox").hidden = !j.needs_code; }).catch(() => {});
+    <form class="Box" id="f">
+      <div class="Box-header">
+        <h2>Source du projet</h2>
+      </div>
+      <div class="Box-body">
+        <label for="repo">URL du dépôt</label>
+        <input id="repo" class="form-control" placeholder="https://github.com/proprietaire/depot" autocomplete="off">
+        <p class="hint">Dépôts publics uniquement, 50 Mo maximum.</p>
+        <label for="doc">Ou description / documentation</label>
+        <textarea id="doc" class="form-control"
+          placeholder="Finalité, données traitées, modèles ou API utilisés, hébergement, utilisateurs, décisions automatisées…"></textarea>
+        <p class="hint">Ignoré si une URL est renseignée.</p>
+        <div id="codebox" hidden><label for="code">Code d'accès</label><input id="code" type="password"
+            class="form-control" autocomplete="off" style="max-width:280px">
+          <p class="hint"></p>
+        </div>
+        <button id="go" class="btn">Analyser</button> <span id="status" class="mut" style="margin-left:8px"></span>
+      </div>
+    </form>
+    <div id="out"></div>
 
-$("f").addEventListener("submit", async e => {
-  e.preventDefault();
-  const repo = $("repo").value.trim(), doc = $("doc").value.trim();
-  if (!repo && !doc) return;
-  $("go").disabled = true; $("status").textContent = "Analyse en cours (10 à 40 s)…"; $("out").innerHTML = "";
-  try {
-    const r = await fetch("/api/analyze", { method:"POST", headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify({ repo: repo || undefined, doc: repo ? undefined : doc, access_code: $("code").value }) });
-    const j = await r.json();
-    if (!r.ok) throw new Error(j.error || r.statusText);
-    render(j); $("status").textContent = "";
-  } catch (err) { $("status").textContent = ""; $("out").innerHTML = `<div class="flash flash-danger">${esc(err.message)}</div>`; }
-  $("go").disabled = false;
-});
+    <footer id="mentions" class="Box" style="margin-top:32px">
+      <div class="Box-header">
+        <h2>Mentions légales & confidentialité</h2>
+      </div>
+      <div class="Box-body">
+        <p class="hint">
+          <b>Traitement des données :</b> le texte ou le dépôt que vous soumettez est envoyé à l'API d'OpenAI
+          (sous-traitant, hébergé aux États-Unis) afin d'en extraire les faits nécessaires au rapport. Ce site ne
+          stocke pas votre soumission ni le rapport généré au-delà du traitement de la requête ; se référer à la
+          politique de confidentialité d'OpenAI pour les conditions de traitement et de conservation appliquées de
+          son côté.
+        </p>
+        <p class="hint">
+          <b>Base légale :</b> exécution de la demande à votre initiative (intérêt légitime / mesures précontractuelles).
+          Ne transmettez pas de données personnelles réelles de tiers (salariés, clients, patients…) : utilisez une
+          description anonymisée ou un dépôt d'exemple.
+        </p>
+        <p class="hint">
+          <b>Nature du rapport :</b> analyse automatisée fondée sur un flowchart non officiel et la grille de
+          maturité CNIL. Elle ne constitue pas un avis juridique et ne dispense pas d'une revue humaine avant toute
+          décision.
+        </p>
+      </div>
+    </footer>
+  </main>
+  <script>
+    const $ = id => document.getElementById(id);
+    const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    const FLASH = { interdit: "flash-danger", non_conforme_probable: "flash-danger", a_corriger: "flash-severe", plutot_conforme: "flash-ok", indetermine: "flash-warn" };
+    const STATUS = {
+      prohibited: "flash-danger", high_risk: "flash-severe", high_risk_sectoral: "flash-severe", not_high_risk_registered: "flash-warn",
+      minimal: "flash-ok", out_of_scope: "flash-default", excluded: "flash-default", undetermined: "flash-warn"
+    };
+    const rows = a => a.length ? a.map(x => `<div class="Box-row">${x}</div>`).join("") : `<div class="Box-row mut">Aucun.</div>`;
+    const box = (title, body, count) => `<div class="Box"><div class="Box-header"><h2>${title}</h2>${count != null ? `<span class="Counter">${count}</span>` : ""}</div>${body}</div>`;
 
-function render(r) {
-  if (r.dry_run) { $("out").innerHTML = `<div class="flash flash-warn">Aucun fichier exploitable trouvé.</div>`; return; }
-  const ai = r.ai_act, rg = r.rgpd, m = r.meta, lv = rg.maturity.levels, cov = Math.round(r.coverage * 100);
-  const nf = rg.findings.length, nv = r.to_verify.length + r.missing_info.length, facts = Object.entries(r.facts || {});
+    fetch("/api/analyze").then(r => r.json()).then(j => { $("codebox").hidden = !j.needs_code; }).catch(() => { });
 
-  const summary = `
+    $("f").addEventListener("submit", async e => {
+      e.preventDefault();
+      const repo = $("repo").value.trim(), doc = $("doc").value.trim();
+      if (!repo && !doc) return;
+      $("go").disabled = true; $("status").textContent = "Analyse en cours (10 à 40 s)…"; $("out").innerHTML = "";
+      try {
+        const r = await fetch("/api/analyze", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ repo: repo || undefined, doc: repo ? undefined : doc, access_code: $("code").value })
+        });
+        const j = await r.json();
+        if (!r.ok) throw new Error(j.error || r.statusText);
+        render(j); $("status").textContent = "";
+      } catch (err) { $("status").textContent = ""; $("out").innerHTML = `<div class="flash flash-danger">${esc(err.message)}</div>`; }
+      $("go").disabled = false;
+    });
+
+    function render(r) {
+      if (r.dry_run) { $("out").innerHTML = `<div class="flash flash-warn">Aucun fichier exploitable trouvé.</div>`; return; }
+      const ai = r.ai_act, rg = r.rgpd, m = r.meta, lv = rg.maturity.levels, cov = Math.round(r.coverage * 100);
+      const nf = rg.findings.length, nv = r.to_verify.length + r.missing_info.length, facts = Object.entries(r.facts || {});
+
+      const summary = `
     <div class="flash ${FLASH[r.verdict]}"><strong>${esc(r.verdict_label)}</strong>
-      <div class="mut">Couverture des faits clés : ${cov} % <span class="bar"><i style="width:${cov}%"></i></span> · ${m.files_included}/${m.files_total} fichiers analysés · ${m.usage ? m.usage.total_tokens.toLocaleString("fr-FR") : "?"} tokens</div></div>
+      <div class="mut">Couverture des faits clés : ${cov} % <span class="bar"><i style="width:${cov}%"></i></span> · ${m.files_included}/${m.files_total} fichiers analysés</div></div>
     <div class="flash ${STATUS[ai.status] || "flash-default"}"><strong>AI Act : ${esc(ai.label)}</strong>
       <div class="mut">Rôle(s) : ${esc(ai.roles.join(", ") || "non déterminé")}${ai.transparency.length ? " · transparence : " + esc(ai.transparency.join(", ")) : ""}</div></div>
     ${box("Constats RGPD principaux", rows(rg.findings.slice(0, 3).map(fnd)), nf)}
     <p class="mut"><small>${esc(r.disclaimer)}</small></p>`;
 
-  const aiTab = box("Obligations", rows(ai.obligations.map(o => `<span class="Label Label-accent">${esc(o.ref)}</span> ${esc(o.label)}`)), ai.obligations.length) +
-    box("Parcours du flowchart", `<table>${ai.path.map(p => `<tr><td style="width:110px"><code>${esc(p.step)}</code></td><td>${esc(p.answer)}${p.why ? `<br><small class="mut">${esc(p.why)}</small>` : ""}</td></tr>`).join("")}</table>`, ai.path.length) +
-    ai.notes.map(n => `<div class="flash flash-default"><small>${esc(n)}</small></div>`).join("");
+      const aiTab = box("Obligations", rows(ai.obligations.map(o => `<span class="Label Label-accent">${esc(o.ref)}</span> ${esc(o.label)}`)), ai.obligations.length) +
+        box("Parcours du flowchart", `<table>${ai.path.map(p => `<tr><td style="width:110px"><code>${esc(p.step)}</code></td><td>${esc(p.answer)}${p.why ? `<br><small class="mut">${esc(p.why)}</small>` : ""}</td></tr>`).join("")}</table>`, ai.path.length) +
+        ai.notes.map(n => `<div class="flash flash-default"><small>${esc(n)}</small></div>`).join("");
 
-  const rgTab = `<p class="mut">${rg.applicable === false ? "Aucune donnée personnelle détectée." : "AIPD " + (rg.aipd_required ? "<b>probablement requise</b>" : "non déclenchée") + (rg.criteria.length ? " — critères : " + esc(rg.criteria.join(", ")) : "")}</p>` +
-    box("Constats", rows(rg.findings.map(fnd)), nf) +
-    box("Maturité CNIL (1 à 5)", `<table><tr><th>Activité</th><th>Niveau</th><th>Preuve</th></tr>${Object.entries(lv).map(([k, v]) =>
-      `<tr><td>${esc(k)}</td><td>${v.level != null ? `<span class="Label Label-accent">${v.level}</span>` : `<span class="Label Label-default">non démontré</span>`}</td><td><small class="mut">${esc(v.e || "")}</small></td></tr>`).join("")}</table>`, rg.maturity.evaluated + "/8");
+      const rgTab = `<p class="mut">${rg.applicable === false ? "Aucune donnée personnelle détectée." : "AIPD " + (rg.aipd_required ? "<b>probablement requise</b>" : "non déclenchée") + (rg.criteria.length ? " — critères : " + esc(rg.criteria.join(", ")) : "")}</p>` +
+        box("Constats", rows(rg.findings.map(fnd)), nf) +
+        box("Maturité CNIL (1 à 5)", `<table><tr><th>Activité</th><th>Niveau</th><th>Preuve</th></tr>${Object.entries(lv).map(([k, v]) =>
+          `<tr><td>${esc(k)}</td><td>${v.level != null ? `<span class="Label Label-accent">${v.level}</span>` : `<span class="Label Label-default">non démontré</span>`}</td><td><small class="mut">${esc(v.e || "")}</small></td></tr>`).join("")}</table>`, rg.maturity.evaluated + "/8");
 
-  const verify = box("À vérifier", rows(r.to_verify.map(esc)), r.to_verify.length) + box("Questions au porteur du projet", rows(r.missing_info.map(esc)), r.missing_info.length);
-  const proofs = box("Faits extraits et preuves", `<table><tr><th>Fait</th><th>Valeur</th><th>Preuve</th></tr>${facts.map(([k, v]) =>
-      `<tr><td><code>${esc(k)}</code></td><td>${esc(Array.isArray(v.v) ? v.v.join(", ") || "aucun" : v.v)}</td><td><small class="mut">${esc(v.e || "")}</small></td></tr>`).join("")}</table>` +
-    (r.unsupported_claims.length ? `<div class="Box-row"><small class="mut">Affirmations écartées (preuve invalide) : ${esc(r.unsupported_claims.join(", "))}</small></div>` : ""), facts.length);
+      const verify = box("À vérifier", rows(r.to_verify.map(esc)), r.to_verify.length) + box("Questions au porteur du projet", rows(r.missing_info.map(esc)), r.missing_info.length);
+      const proofs = box("Faits extraits et preuves", `<table><tr><th>Fait</th><th>Valeur</th><th>Preuve</th></tr>${facts.map(([k, v]) =>
+        `<tr><td><code>${esc(k)}</code></td><td>${esc(Array.isArray(v.v) ? v.v.join(", ") || "aucun" : v.v)}</td><td><small class="mut">${esc(v.e || "")}</small></td></tr>`).join("")}</table>` +
+        (r.unsupported_claims.length ? `<div class="Box-row"><small class="mut">Affirmations écartées (preuve invalide) : ${esc(r.unsupported_claims.join(", "))}</small></div>` : ""), facts.length);
 
-  const tabs = [["Synthèse", summary], ["AI Act", aiTab, ai.obligations.length], ["RGPD", rgTab, nf], ["À vérifier", verify, nv], ["Preuves", proofs, facts.length]];
-  $("out").innerHTML = `<div class="tabs" role="tablist">${tabs.map((t, i) => `<button class="tab" role="tab" data-i="${i}" aria-selected="${i === 0}">${t[0]}${t[2] != null ? `<span class="Counter">${t[2]}</span>` : ""}</button>`).join("")}</div>` +
-    tabs.map((t, i) => `<section data-p="${i}" ${i ? "hidden" : ""}>${t[1]}</section>`).join("");
-  $("out").querySelectorAll(".tab").forEach(b => b.onclick = () => {
-    $("out").querySelectorAll(".tab").forEach(x => x.setAttribute("aria-selected", x === b));
-    $("out").querySelectorAll("section").forEach(s => s.hidden = s.dataset.p !== b.dataset.i);
-  });
-}
-function fnd(x) { return `<span class="Label Label-${x.severity}">${esc(x.severity)}</span> ${esc(x.text)} <small class="mut">(${esc(x.ref)}${x.evidence ? " · " + esc(x.evidence) : ""})</small>`; }
-</script>
+      const tabs = [["Synthèse", summary], ["AI Act", aiTab, ai.obligations.length], ["RGPD", rgTab, nf], ["À vérifier", verify, nv], ["Preuves", proofs, facts.length]];
+      $("out").innerHTML = `<div class="tabs" role="tablist">${tabs.map((t, i) => `<button class="tab" role="tab" data-i="${i}" aria-selected="${i === 0}">${t[0]}${t[2] != null ? `<span class="Counter">${t[2]}</span>` : ""}</button>`).join("")}</div>` +
+        tabs.map((t, i) => `<section data-p="${i}" ${i ? "hidden" : ""}>${t[1]}</section>`).join("");
+      $("out").querySelectorAll(".tab").forEach(b => b.onclick = () => {
+        $("out").querySelectorAll(".tab").forEach(x => x.setAttribute("aria-selected", x === b));
+        $("out").querySelectorAll("section").forEach(s => s.hidden = s.dataset.p !== b.dataset.i);
+      });
+    }
+    function fnd(x) { return `<span class="Label Label-${x.severity}">${esc(x.severity)}</span> ${esc(x.text)} <small class="mut">(${esc(x.ref)}${x.evidence ? " · " + esc(x.evidence) : ""})</small>`; }
+  </script>
 </body>
+
 </html>
