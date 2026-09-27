@@ -8,7 +8,7 @@ from pathlib import Path
 
 KB = Path(__file__).resolve().parent.parent / "kb"
 TOTAL, MAX_OUT, MARGIN = 50_000, 3500, 0.05
-FILE_CAP, TREE_CAP, MAX_FILE_BYTES, MAX_ZIP = 2500, 1200, 200_000, 30_000_000
+FILE_CAP, TREE_CAP, MAX_FILE_BYTES, MAX_ZIP = 2500, 1200, 200_000, 50_000_000
 
 
 # ───────────────────────── tokens (estimation pessimiste : ~3 car./token, tiktoken absent sur Vercel)
@@ -119,10 +119,11 @@ connaissances sert de définitions.
 Règles :
 - "e" (preuve) = "chemin/exact/du/fichier: extrait ou paraphrase ≤ 15 mots", avec le chemin EXACT d'un fichier fourni.
 - v=true (ou liste non vide) exige une preuve positive dans un fichier. Sans preuve : v=null.
-- v=false = absence constatée : seulement si le projet paraît assez couvert pour l'affirmer (ou s'il le dit explicitement), sinon null. e="absent" est accepté.
+- Traite le projet comme le code réel d'un produit déployé par une organisation, pas un exercice académique : si un fichier prouve un traitement de données personnelles ou une automatisation de décision, une organisation qui aurait mis en place la protection correspondante (base légale, information des personnes, sécurité, droits, conservation, registre, DPIA, contrôle humain, gestion des risques IA, journalisation) le documenterait quelque part dans son dépôt (README, CGU, docs, code). Si le traitement/l'automatisation est prouvé et qu'aucun fichier ne mentionne la protection correspondante, réponds v=false, e="absent" plutôt que null.
+- v=false sans ce contexte de risque avéré : seulement si le projet paraît assez couvert pour l'affirmer, sinon null.
 - Listes : [] = tu as examiné le projet et rien ne s'applique (aucune preuve requise) ; null = impossible à évaluer. Si le projet est décrit assez précisément pour trancher, réponds [] plutôt que null.
 - Ne devine pas. Un modèle/une API appelée par le code (openai, transformers, sklearn…) prouve un système d'IA.
-- Maturité CNIL : level 1 à 5 seulement si un fichier prouve la pratique (politique, procédure, registre…). Le code seul ne prouve pas une organisation : null. N'emploie jamais 0 : une absence de mention n'est pas une preuve d'absence.
+- Maturité CNIL : level 1 à 5 si un fichier prouve la pratique (politique, procédure, registre…). Si un traitement de données personnelles est prouvé mais qu'aucune pratique de gouvernance n'est documentée nulle part dans le dépôt, réponds level=1, e="absent" (constat réel) plutôt que null. Réponds null uniquement si le projet ne traite manifestement aucune donnée personnelle.
 - Pour les faits « hors champ » (is_ai_system=false, aucun lien UE), exige une déclaration explicite du projet, sinon null.
 - missing_info : au plus 6 questions précises à poser au porteur pour lever les incertitudes décisives.
 """
@@ -188,17 +189,18 @@ def collect(entries, budget):
     ents = [e for e in entries if ok(e[0])]
     tree = cut("\n".join(sorted(e[0] for e in ents)), TREE_CAP)
     budget -= count(tree)
-    parts, paths, skipped, trunc = [], [], 0, 0
+    parts, paths, trunc = [], [], 0
     for n, size, read in sorted(ents, key=lambda e: (priority(e[0]), e[1])):
-        if size > MAX_FILE_BYTES: skipped += 1; continue
+        if budget < 100: break                                                     # budget épuisé : on ne lit plus rien
+        if size > MAX_FILE_BYTES or min(size // 3, FILE_CAP) > budget: continue   # ne pas décompresser ce qui ne rentre pas
         try: text = SECRET.sub("[REDACTED]", read())
-        except Exception: skipped += 1; continue
+        except Exception: continue
         if not text.strip(): continue
         if count(text) > FILE_CAP: text = cut(text, FILE_CAP) + "\n[... tronqué ...]"; trunc += 1
         block = f"### {n}\n{text}\n"
-        if count(block) > budget: skipped += 1; continue
+        if count(block) > budget: continue
         parts.append(block); paths.append(n); budget -= count(block)
-    return {"tree": tree, "content": "".join(parts), "paths": paths, "total": len(ents), "skipped": skipped, "truncated": trunc}
+    return {"tree": tree, "content": "".join(parts), "paths": paths, "total": len(ents), "skipped": len(ents) - len(paths), "truncated": trunc}
 
 
 # ───────────────────────── appel OpenAI
@@ -242,8 +244,9 @@ def validate(raw, paths):
     for k in MATURITY:
         d = (raw.get("maturity") or {}).get(k) or {}
         lv, e = d.get("level"), d.get("e")
-        if lv == 0: lv = None                      # « rien n'est fait » ne se prouve pas depuis un dépôt
-        elif lv is not None and (not isinstance(lv, int) or not 1 <= lv <= 5 or not _has_path(e, paths)):
+        if lv == 0: lv = None
+        elif lv is not None and (not isinstance(lv, int) or not 1 <= lv <= 5
+                                  or (e != "absent" and not _has_path(e, paths))):
             unsupported.append("maturity." + k); lv = None
         mat[k] = {"level": lv, "e": e if lv is not None else None}
     return facts, mat, unsupported, [str(x) for x in (raw.get("missing_info") or [])][:6]
